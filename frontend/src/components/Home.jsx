@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Document, Page } from "react-pdf";
+import axios from "axios";
+import { REACT_APP_API_URL } from "../../config.js";
 
 const Home = () => {
   const [pdf, setPdf] = useState(null);
   const [numPages, setNumPages] = useState(null);
   const [selectedPages, setSelectedPages] = useState([]);
+  const axiosInstance=axios.create({baseURL:REACT_APP_API_URL})
+
 
   const handleButtonClick = () => {
     if(pdf){
@@ -12,9 +16,10 @@ const Home = () => {
     const formData = new FormData();
     formData.append('pdf', pdf);
     formData.append('selectedPages', JSON.stringify(selectedPages));
+    console.log(formData);
 
     // Send a POST request using Axios
-    axios.post('/api/uploadPdf', formData)
+    axiosInstance.post('/uploadPdf', formData)
       .then(response => {
         // Handle success response
         console.log('Upload successful:', response.data);
