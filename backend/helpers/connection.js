@@ -23,3 +23,7 @@ export const connect = async (result) => {
     return result(error);
   }
 };
+
+export const get=()=>{
+  return state.db;
+}
