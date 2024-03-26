@@ -12,7 +12,7 @@ const App = () => {
   pdfjs.GlobalWorkerOptions.workerSrc = '/node_modules/react-pdf/node_modules/pdfjs-dist/build/pdf.worker.js';
   return <div>
     <ToastContainer
-        position="top-right"
+        position="top-left"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}

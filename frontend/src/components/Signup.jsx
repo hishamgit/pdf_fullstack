@@ -17,10 +17,16 @@ const Signup = () => {
   });
   const axiosInstance = axios.create({ baseURL: REACT_APP_API_URL });
 
+  useEffect(() => {
+    if (loginStatus) {
+      navigate("/");
+    }
+  }, [loginStatus]);
+
   const { email, username, password } = inputValue;
   const handleOnChange = (e) => {
-    const { name: value } = e.target;
-    setInputValue({ ...inputValue, [name]: value });
+    const { name, value } = e.target;
+    setInputValue({ ...inputValue, [ name ]: value });
   };
 
   const handleSuccess = (msg) => {
@@ -58,12 +64,6 @@ const Signup = () => {
       username: "",
       password: "",
     });
-
-    useEffect(() => {
-      if (loginStatus) {
-        navigate("/");
-      }
-    }, [loginStatus]);
   };
 
   return (

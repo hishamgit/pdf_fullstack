@@ -1,24 +1,79 @@
 import express from "express";
 import multer from "multer";
+import fs from "fs";
+import { PDFDocument } from "pdf-lib";
 
 const router = express.Router();
 
 // Set up Multer for file uploads
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-      cb(null, file.originalname);
-    }
-  });
- const upload = multer({ storage: storage });
-
-router.post("/uploadPdf",upload.single('pdf'), async (req, res) => {
-    const pdf = req.file;
-    const selectedPages = JSON.parse(req.body.selectedPages);
-    console.log(pdf,selectedPages);
-    res.status(200).json({ message: 'PDF uploaded successfully' });
+  destination: function (req, file, cb) {
+    const userId = req.body.userId;
+    // Create a directory with the userId if it doesn't exist
+    const userDir = `uploads/${userId}`;
+    fs.mkdirSync(userDir, { recursive: true });
+    cb(null, userDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
 });
+const upload = multer({ storage: storage });
+
+router.post("/uploadPdf", upload.single("pdf"), async (req, res) => {
+  const pdf = req.file;
+  const selectedPages = JSON.parse(req.body.selectedPages);
+  const userId = req.body.userId;
+  //   console.log(pdf,selectedPages,userId);
+  // Process the uploaded PDF to create a new PDF with selected pages
+  const newPdf = await processPdf(pdf, selectedPages);
+  res.json({ status: true });
+});
+router.get("/getPdf", async (req, res) => {
+
+    fs.readFile("new.pdf", (err, data) => {
+        if (err) {
+            console.error('Error reading PDF file:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+
+        // Set the appropriate headers
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader("Content-Disposition", "attachment; filename=sample.pdf");
+
+        // Send the PDF file data as the response
+        res.send(data);
+        fs.unlink("new.pdf", (err) => {
+            if (err) {
+                console.error('Error deleting PDF file:', err);
+            } else {
+                console.log('PDF file deleted successfully');
+            }
+        });
+    });
+});
+
+async function processPdf(pdf, selectedPages) {
+  // Create a new PDF document
+  const newPdf = await PDFDocument.create();
+  try {
+    // Read the PDF file using streams
+
+    const pdfBytes = fs.readFileSync(pdf.path);
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    // Iterate over the selected pages and copy them to the new PDF
+    for (const pageNumber of selectedPages) {
+      const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageNumber - 1]);
+      newPdf.addPage(copiedPage);
+    }
+    // Save the new PDF document to a buffer
+    const pdfBytesBuffer = await newPdf.save();
+    fs.writeFileSync("new.pdf", pdfBytesBuffer);
+    return pdfBytesBuffer;
+  } catch (error) {
+    console.error("Error processing PDF:", error);
+    throw error; // Re-throw the error for handling in the calling function
+  }
+}
 
 export default router;

@@ -43,9 +43,10 @@ const Login = () => {
     try {
       const { data } = await axiosInstance.post(
         "/login",
-        { ...inputValue,remember },
+        { ...inputValue, remember },
         { withCredentials: true }
       );
+
       const { success, message } = data;
       if (success) {
         handleSuccess(message);
@@ -72,7 +73,7 @@ const Login = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="flex flex-col border-2 border-sky-800 rounded-xl p-4 mx-auto w-[600px]">
+        <div className="flex flex-col border-2 border-sky-800 rounded-xl p-4 mx-auto w-2/3 md:w-[600px]">
           <div className="my-4">
             <label htmlFor="email" className="text-xl mr-4 text-gray-500">
               Email

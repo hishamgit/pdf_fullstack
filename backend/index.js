@@ -3,22 +3,34 @@ import { PORT,mongoDBUrl } from "./config.js";
 import { connect } from "./helpers/connection.js";
 import pdfRouter from "./routes/pdfRouter.js"
 import cors from "cors";
-import multer from "multer";
+import authRouter from "./routes/authRouter.js";
+import { userAuthMiddleware } from "./helpers/authMiddleware.js";
+import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
 
 
 const app=express();
 
-app.use(cors());
+app.use(cors({
+    credentials: true,
+    origin: true,
+  }));
+
+//middleware for cookie
+app.use(cookieParser());
 //middleware for parsing request body
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/api',pdfRouter);
+app.use('/api',authRouter);
+
 
 app.get('/',(req,res)=>{
     res.send("hi bro")
 })
-
+//token authentication
+app.post('/api',userAuthMiddleware)
 
 connect((err,data)=>{
     if(err){
