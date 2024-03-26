@@ -18,6 +18,7 @@ const Home = () => {
   const { loginStatus, setLoginStatus } = useContext(loginContext);
   const axiosInstance = axios.create({ baseURL: REACT_APP_API_URL });
   const [cookies, setCookie, removeCookie] = useCookies([]);
+  const [pdfs, setPdfs] = useState([]);
 
   const Logout = () => {
     removeCookie("token", { path: "/", domain: "localhost" }); //since httpOnly:false
@@ -48,7 +49,19 @@ const Home = () => {
       }
     };
     verifyCookie();
+
   }, [cookies, navigate, removeCookie]);
+
+  const fetchPdfs=()=>{
+    axiosInstance
+    .get(`/oldPdfs?userId=${user._id}`)
+    .then((res) => {
+      setPdfs(res.data);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  }
 
   const handleButtonClick = () => {
     if (pdf) {
@@ -195,6 +208,29 @@ const Home = () => {
           Make pdf
         </button>
       </div>
+      <div className="flex justify-center pt-16">
+        <button
+          type="button"
+          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+          onClick={fetchPdfs}
+        >
+          previos pdfs
+        </button>
+      </div>
+      <div>
+        
+      
+      <ul>
+        {pdfs.map((pdf, index) => (
+          
+          <li key={index}>
+            <a href={`http://localhost:3333/api/download/${pdf.filename}?userId=${user._id}` } download className="text-white" >
+              {pdf.filename}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
     </div>
   );
 };

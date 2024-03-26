@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import fs from "fs";
+import path from "path";
 import { PDFDocument } from "pdf-lib";
 
 const router = express.Router();
@@ -30,27 +31,26 @@ router.post("/uploadPdf", upload.single("pdf"), async (req, res) => {
   res.json({ status: true });
 });
 router.get("/getPdf", async (req, res) => {
+  fs.readFile("new.pdf", (err, data) => {
+    if (err) {
+      console.error("Error reading PDF file:", err);
+      return res.status(500).send("Internal Server Error");
+    }
 
-    fs.readFile("new.pdf", (err, data) => {
-        if (err) {
-            console.error('Error reading PDF file:', err);
-            return res.status(500).send('Internal Server Error');
-        }
+    // Set the appropriate headers
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=sample.pdf");
 
-        // Set the appropriate headers
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader("Content-Disposition", "attachment; filename=sample.pdf");
-
-        // Send the PDF file data as the response
-        res.send(data);
-        fs.unlink("new.pdf", (err) => {
-            if (err) {
-                console.error('Error deleting PDF file:', err);
-            } else {
-                console.log('PDF file deleted successfully');
-            }
-        });
+    // Send the PDF file data as the response
+    res.send(data);
+    fs.unlink("new.pdf", (err) => {
+      if (err) {
+        console.error("Error deleting PDF file:", err);
+      } else {
+        console.log("PDF file deleted successfully");
+      }
     });
+  });
 });
 
 async function processPdf(pdf, selectedPages) {
@@ -75,5 +75,37 @@ async function processPdf(pdf, selectedPages) {
     throw error; // Re-throw the error for handling in the calling function
   }
 }
+
+router.get("/oldPdfs", (req, res) => {
+  const userId = req.query.userId;
+  const pdfDir = `uploads/${userId}`;
+  const pdfFiles = fs.readdirSync(pdfDir);
+  const pdfs = pdfFiles.map((file) => {
+    const filename = file;
+    const pathToFile = path.join(pdfDir, file);
+    return { filename, path: pathToFile };
+  });
+  res.json(pdfs);
+});
+
+router.get("/download/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const userid = req.query.userId;
+  const filePath = path.join(`uploads/${userid}`, filename); 
+
+  // Check if the file exists
+  if (fs.existsSync(filePath)) {
+    console.log("hi");
+    // Set the appropriate headers
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Content-Type", "application/pdf");
+
+    // Send the file as a response
+    res.download(filePath);
+  } else {
+    // If the file does not exist, return a 404 error
+    res.status(404).send("File not found");
+  }
+});
 
 export default router;
