@@ -171,33 +171,34 @@ const Home = () => {
             </div>
             <br />
             <p className="text-white">Choose pages</p>
-
-            <div className="max-h-screen overflow-y-scroll overflow-hidden">
-              <Document
-                file={pdf}
-                onLoadSuccess={onDocumentLoadSuccess}
-                className="w-full bg-gray-800"
-              >
-                {Array.from(new Array(numPages), (el, index) => (
-                  <div key={`page_${index + 1}`} className="mb-4">
-                    <Page pageNumber={index + 1} />
-                    <div className="flex items-center mt-2">
-                      <input
-                        type="checkbox"
-                        id={`page_${index + 1}`}
-                        checked={selectedPages.includes(index + 1)}
-                        onChange={() => handleCheckboxChange(index + 1)}
-                      />
-                      <label
-                        className="text-white ml-2 cursor-pointer"
-                        htmlFor={`page_${index + 1}`}
-                      >
-                        Page {index + 1}
-                      </label>
+            <div className="max-h-screen overflow-y-scroll overflow-x-hidden">
+              <div className="max-w-full overflow-x-scroll overflow-y-hidden">
+                <Document
+                  file={pdf}
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  className="w-full bg-gray-800"
+                >
+                  {Array.from(new Array(numPages), (el, index) => (
+                    <div key={`page_${index + 1}`} className="mb-4">
+                      <Page pageNumber={index + 1} />
+                      <div className="flex items-center mt-2">
+                        <input
+                          type="checkbox"
+                          id={`page_${index + 1}`}
+                          checked={selectedPages.includes(index + 1)}
+                          onChange={() => handleCheckboxChange(index + 1)}
+                        />
+                        <label
+                          className="text-white ml-2 cursor-pointer"
+                          htmlFor={`page_${index + 1}`}
+                        >
+                          Page {index + 1}
+                        </label>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </Document>
+                  ))}
+                </Document>
+              </div>
             </div>
           </div>
         )}
