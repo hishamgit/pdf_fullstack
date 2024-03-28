@@ -12,8 +12,8 @@ import bodyParser from "body-parser";
 const app=express();
 
 app.use(cors({
-    credentials: true,
     origin: true,
+    credentials: true
   }));
 
 //middleware for cookie
@@ -26,9 +26,7 @@ app.use('/api',pdfRouter);
 app.use('/api',authRouter);
 
 
-app.get('/',(req,res)=>{
-    res.send("hi bro")
-})
+
 //token authentication
 app.post('/api',userAuthMiddleware)
 
@@ -43,12 +41,4 @@ connect((err,data)=>{
     }
 });
 
-// mongoose.connect(mongoDBUrl).then(()=>{
-//     console.log("connected to atlas")
-//     app.listen(PORT,()=>{
-//         console.log(`app is listening at port ${PORT}`);
-//     })
-// }).catch((err)=>{
-//     console.log(err);
-// })
 

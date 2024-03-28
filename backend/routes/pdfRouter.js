@@ -27,10 +27,41 @@ router.post("/uploadPdf", upload.single("pdf"), async (req, res) => {
   const userId = req.body.userId;
   //   console.log(pdf,selectedPages,userId);
   // Process the uploaded PDF to create a new PDF with selected pages
-  const newPdf = await processPdf(pdf, selectedPages);
-  res.json({ status: true });
+  try {
+    const newPdf = await processPdf(pdf, selectedPages);
+    res.json({ status: true });
+  } catch (error) {
+    console.error("Error processing PDF:", error);
+    res.status(500).json({ status: false, message: "Internal Server Error" });
+  }
 });
+
+async function processPdf(pdf, selectedPages) {
+    // Create a new PDF document
+    const newPdf = await PDFDocument.create();
+    try {
+      // Read the PDF file using streams
+  
+      const pdfBytes = fs.readFileSync(pdf.path);
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      // Iterate over the selected pages and copy them to the new PDF
+      for (const pageNumber of selectedPages) {
+        const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageNumber - 1]);
+        newPdf.addPage(copiedPage);
+      }
+      // Save the new PDF document to a buffer
+      const pdfBytesBuffer = await newPdf.save();
+      //save new pdf in server temporarily
+      fs.writeFileSync("new.pdf", pdfBytesBuffer);
+      return pdfBytesBuffer;
+    } catch (error) {
+      console.error("Error processing PDF:", error);
+      throw error; // Re-throw the error for handling in the calling function
+    }
+  }
+
 router.get("/getPdf", async (req, res) => {
+    //read the new.pdf in server
   fs.readFile("new.pdf", (err, data) => {
     if (err) {
       console.error("Error reading PDF file:", err);
@@ -43,6 +74,7 @@ router.get("/getPdf", async (req, res) => {
 
     // Send the PDF file data as the response
     res.send(data);
+    //deleting temporary new.pdf after sending to client
     fs.unlink("new.pdf", (err) => {
       if (err) {
         console.error("Error deleting PDF file:", err);
@@ -53,33 +85,14 @@ router.get("/getPdf", async (req, res) => {
   });
 });
 
-async function processPdf(pdf, selectedPages) {
-  // Create a new PDF document
-  const newPdf = await PDFDocument.create();
-  try {
-    // Read the PDF file using streams
-
-    const pdfBytes = fs.readFileSync(pdf.path);
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    // Iterate over the selected pages and copy them to the new PDF
-    for (const pageNumber of selectedPages) {
-      const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageNumber - 1]);
-      newPdf.addPage(copiedPage);
-    }
-    // Save the new PDF document to a buffer
-    const pdfBytesBuffer = await newPdf.save();
-    fs.writeFileSync("new.pdf", pdfBytesBuffer);
-    return pdfBytesBuffer;
-  } catch (error) {
-    console.error("Error processing PDF:", error);
-    throw error; // Re-throw the error for handling in the calling function
-  }
-}
-
+//route to send previous pdf data
 router.get("/oldPdfs", (req, res) => {
   const userId = req.query.userId;
+  //pdf dir of each user
   const pdfDir = `uploads/${userId}`;
+  //Reads the contents of the directory pdfDir synchronously and returns an array of filenames.
   const pdfFiles = fs.readdirSync(pdfDir);
+  //Maps over the array of filenames (pdfFiles) and transforms each filename into an object with filename and path properties.
   const pdfs = pdfFiles.map((file) => {
     const filename = file;
     const pathToFile = path.join(pdfDir, file);
@@ -88,10 +101,11 @@ router.get("/oldPdfs", (req, res) => {
   res.json(pdfs);
 });
 
+//route to send previous pdf for downloading
 router.get("/download/:filename", (req, res) => {
   const filename = req.params.filename;
   const userid = req.query.userId;
-  const filePath = path.join(`uploads/${userid}`, filename); 
+  const filePath = path.join(`uploads/${userid}`, filename);
 
   // Check if the file exists
   if (fs.existsSync(filePath)) {

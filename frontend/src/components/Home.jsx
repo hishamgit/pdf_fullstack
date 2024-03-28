@@ -16,7 +16,10 @@ const Home = () => {
   const [user, setUser] = useState("");
   const navigate = useNavigate();
   const { loginStatus, setLoginStatus } = useContext(loginContext);
-  const axiosInstance = axios.create({ baseURL: REACT_APP_API_URL });
+  const axiosInstance = axios.create({
+    baseURL: REACT_APP_API_URL,
+    withCredentials: true,
+  });
   const [cookies, setCookie, removeCookie] = useCookies([]);
   const [pdfs, setPdfs] = useState([]);
 
@@ -29,12 +32,31 @@ const Home = () => {
 
   useEffect(() => {
     const verifyCookie = async () => {
-      const { data } = await axiosInstance.post(
-        "",
-        {},
-        { withCredentials: true }
-      );
-      // console.log(data);
+      let data;
+      if (document.cookie) {
+        const cookieValue = document.cookie
+          .split(";")
+          .find((cookie) => cookie.trim().startsWith("token="))
+          ?.split("=")[1];
+          
+        ({ data } = await axiosInstance.post(
+          "",
+          {},
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${cookieValue}`,
+            },
+          }
+        ));
+      } else {
+        ({ data } = await axiosInstance.post(
+          "",
+          {},
+          { withCredentials: true }
+        ));
+      }
+
       const { status, user, message } = data;
       if (status) {
         setUser(user);
@@ -49,19 +71,18 @@ const Home = () => {
       }
     };
     verifyCookie();
-
   }, [cookies, navigate, removeCookie]);
 
-  const fetchPdfs=()=>{
+  const fetchPdfs = () => {
     axiosInstance
-    .get(`/oldPdfs?userId=${user._id}`)
-    .then((res) => {
-      setPdfs(res.data);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-  }
+      .get(`/oldPdfs?userId=${user._id}`)
+      .then((res) => {
+        setPdfs(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   const handleButtonClick = () => {
     if (pdf) {
@@ -218,19 +239,20 @@ const Home = () => {
         </button>
       </div>
       <div>
-        
-      
-      <ul>
-        {pdfs.map((pdf, index) => (
-          
-          <li key={index}>
-            <a href={`http://localhost:3333/api/download/${pdf.filename}?userId=${user._id}` } download className="text-white" >
-              {pdf.filename}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
+        <ul>
+          {pdfs.map((pdf, index) => (
+            <li key={index}>
+              <a
+                href={`http://localhost:3333/api/download/${pdf.filename}?userId=${user._id}`}
+                download
+                className="text-white"
+              >
+                {pdf.filename}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
