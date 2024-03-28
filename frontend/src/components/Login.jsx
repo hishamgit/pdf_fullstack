@@ -5,10 +5,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { loginContext } from "../../loginContext";
 import { REACT_APP_API_URL } from "../../config";
 import axios from "axios";
+import { userContext } from "../../userContext";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { loginStatus } = useContext(loginContext);
+  const { loginStatus,setUser } = useContext(loginContext);
   const [remember,setRemember]=useState(false);
   const [inputValue, setInputValue] = useState({
     email: "",
@@ -46,7 +47,7 @@ const Login = () => {
         { ...inputValue, remember },
         { withCredentials: true }
       );
-
+setUser(inputValue);
       const { success, message } = data;
       if (success) {
         handleSuccess(message);

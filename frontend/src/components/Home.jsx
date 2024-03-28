@@ -8,74 +8,56 @@ import "react-toastify/dist/ReactToastify.css";
 import { REACT_APP_API_URL } from "../../config.js";
 import { loginContext } from "../../loginContext.jsx";
 import { saveAs } from "file-saver";
+import { userContext } from "../../userContext.jsx";
 
 const Home = () => {
   const [pdf, setPdf] = useState(null);
   const [numPages, setNumPages] = useState(null);
   const [selectedPages, setSelectedPages] = useState([]);
-  const [user, setUser] = useState("");
+
   const navigate = useNavigate();
-  const { loginStatus, setLoginStatus } = useContext(loginContext);
+  const { loginStatus, setLoginStatus, user, setUser } =
+    useContext(loginContext);
   const axiosInstance = axios.create({
     baseURL: REACT_APP_API_URL,
     withCredentials: true,
   });
   const [cookies, setCookie, removeCookie] = useCookies([]);
   const [pdfs, setPdfs] = useState([]);
+  const [userinfo, setUserinfo] = useState("");
 
   const Logout = () => {
     removeCookie("token", { path: "/", domain: "localhost" }); //since httpOnly:false
     setLoginStatus(false);
+    setUserinfo("");
     navigate("/login");
     console.log("cookie removal");
   };
 
   useEffect(() => {
-    const verifyCookie = async () => {
-      let data;
-      if (document.cookie) {
-        const cookieValue = document.cookie
-          .split(";")
-          .find((cookie) => cookie.trim().startsWith("token="))
-          ?.split("=")[1];
-          
-        ({ data } = await axiosInstance.post(
-          "",
-          {},
-          {
-            withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${cookieValue}`,
-            },
-          }
-        ));
-      } else {
-        ({ data } = await axiosInstance.post(
-          "",
-          {},
-          { withCredentials: true }
-        ));
-      }
-
-      const { status, user, message } = data;
-      if (status) {
-        setUser(user);
-        setLoginStatus(true);
-        toast(`Hello ${user.username}`);
-      } else {
-        removeCookie("token", { path: "/" });
-        setLoginStatus(false);
-        navigate("/login");
-        toast(user, { position: "top-left" });
-        console.log("cookie not ok", message);
-      }
-    };
-    verifyCookie();
-  }, [cookies, navigate, removeCookie]);
+    if (user) {
+      const verifyCookie = async () => {
+        try {
+          const { data } = await axiosInstance.post("/fetchUser", user);
+          const { info } = data;
+          setUserinfo(info);
+          console.log(info);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      verifyCookie();
+    } else {
+      removeCookie("token", { path: "/", domain: "localhost" }); //since httpOnly:false
+      setLoginStatus(false);
+      setUserinfo("");
+      navigate("/login");
+    }
+  }, [cookies, navigate, removeCookie, user]);
 
   const fetchPdfs = () => {
     axiosInstance
-      .get(`/oldPdfs?userId=${user._id}`)
+      .get(`/oldPdfs?userId=${userinfo._id}`)
       .then((res) => {
         setPdfs(res.data);
       })
@@ -89,7 +71,7 @@ const Home = () => {
       // Prepare the data to be sent in the request body
       const formData = new FormData();
       formData.append("selectedPages", JSON.stringify(selectedPages));
-      formData.append("userId", user._id);
+      formData.append("userId", userinfo._id);
       formData.append("pdf", pdf);
 
       // Send a POST request using Axios
@@ -160,7 +142,7 @@ const Home = () => {
       </div>
       <div className="flex justify-center pb-16">
         <h1 className="text-4xl font-medium text-green-400 my-4 ">
-          Welcome {user.username}
+          Welcome {userinfo.username}
         </h1>
       </div>
 
@@ -243,7 +225,7 @@ const Home = () => {
           {pdfs.map((pdf, index) => (
             <li key={index}>
               <a
-                href={`http://localhost:3333/api/download/${pdf.filename}?userId=${user._id}`}
+                href={`http://localhost:3333/api/download/${pdf.filename}?userId=${userinfo._id}`}
                 download
                 className="text-white"
               >

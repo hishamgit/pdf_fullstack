@@ -77,4 +77,23 @@ authRouter.post("/login", async (req, res) => {
     console.error(error);
   }
 });
+authRouter.post('/fetchUser',async (req,res)=>{
+    try {
+        const { email, password } = req.body;
+    
+        if (!(email )) {
+          return res.status(400).json({ message: "email not found " });
+        }
+         // Find the user by email
+        const user = await get().collection(USER_COLLECTION).findOne({ email });
+        if (!user) {
+          return res.status(400).json({ message: "user not found " });
+        }
+        res
+          .status(201)
+          .json({ message: "User data got", success: true ,info:user});
+      } catch (error) {
+        console.error(error);
+      }
+})
 export default authRouter;
