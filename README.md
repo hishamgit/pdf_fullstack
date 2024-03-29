@@ -22,7 +22,7 @@ A web application built using the MERN (MongoDB, Express.js, React.js, Node.js) 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/hishamgit/bookStore_MERN_app.git
+   git@github.com:hishamgit/pdf_fullstack.git
 2. Navigate to the project directory:
    ```bash
    cd bookStore_MERN_app
