@@ -16,5 +16,17 @@ A web application built using the MERN (MongoDB, Express.js, React.js, Node.js) 
 - Express.js: Node.js framework for building the backend RESTful API.
 - React.js: Frontend library for building interactive user interfaces.
 - Node.js: JavaScript runtime environment for running server-side code.
-- React PDF: Library for rendering PDF files in the browser.
-- file-saver: Library for saving files on the client-side.
+
+## Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/hishamgit/bookStore_MERN_app.git
+2. Navigate to the project directory:
+   ```bash
+   cd bookStore_MERN_app
+   cd backend
+3. Create a .env file which contains JWT_KEY, and config.js which contains PORT and mongoDbURL
+4. Install dependencies for the server:
+   ```bash
