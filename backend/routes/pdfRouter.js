@@ -16,11 +16,12 @@ const storage = multer.diskStorage({
     cb(null, userDir);
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname);
+    cb(null, file.originalname); // Callback with null error and original filename
   },
 });
 const upload = multer({ storage: storage });
 
+// Route for handling PDF upload
 router.post("/uploadPdf", upload.single("pdf"), async (req, res) => {
   const pdf = req.file;
   const selectedPages = JSON.parse(req.body.selectedPages);
@@ -30,6 +31,7 @@ router.post("/uploadPdf", upload.single("pdf"), async (req, res) => {
   const newPdf = await processPdf(pdf, selectedPages);
   res.json({ status: true });
 });
+// Route for downloading the newly created PDF
 router.get("/getPdf", async (req, res) => {
   fs.readFile("new.pdf", (err, data) => {
     if (err) {
@@ -43,6 +45,7 @@ router.get("/getPdf", async (req, res) => {
 
     // Send the PDF file data as the response
     res.send(data);
+    //deleting pdf after being sent
     fs.unlink("new.pdf", (err) => {
       if (err) {
         console.error("Error deleting PDF file:", err);
@@ -76,11 +79,14 @@ async function processPdf(pdf, selectedPages) {
   }
 }
 
+// Route for fetching old PDFs associated with a user
 router.get("/oldPdfs", (req, res) => {
   const userId = req.query.userId;
   const pdfDir = `uploads/${userId}`;
+  // Read directory contents synchronously
   const pdfFiles = fs.readdirSync(pdfDir);
   const pdfs = pdfFiles.map((file) => {
+    // Map each file to an object containing filename and path
     const filename = file;
     const pathToFile = path.join(pdfDir, file);
     return { filename, path: pathToFile };
@@ -88,10 +94,11 @@ router.get("/oldPdfs", (req, res) => {
   res.json(pdfs);
 });
 
+// Route for downloading old PDFs
 router.get("/download/:filename", (req, res) => {
   const filename = req.params.filename;
   const userid = req.query.userId;
-  const filePath = path.join(`uploads/${userid}`, filename); 
+  const filePath = path.join(`uploads/${userid}`, filename);
 
   // Check if the file exists
   if (fs.existsSync(filePath)) {

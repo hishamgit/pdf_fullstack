@@ -5,6 +5,7 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import LoginStatus from "../loginContext.jsx";
 
+//Wrap the App component within the LoginStatus component to provide login context
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <LoginStatus>

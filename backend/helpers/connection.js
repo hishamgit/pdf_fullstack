@@ -1,10 +1,12 @@
 import { MongoClient, ServerApiVersion } from "mongodb";
 import { mongoDBUrl } from "../config.js";
 
+// Object to maintain the state of the database connection
 const state = {
   db: null,
 };
 
+// Function to connect to the MongoDB database asynchronously
 export const connect = async (result) => {
   const dbname = "pdf-Database";
   const client = new MongoClient(mongoDBUrl, {
@@ -16,6 +18,7 @@ export const connect = async (result) => {
   });
 
   try {
+    // Attempting to establish connection to the MongoDB server
     await client.connect();
     state.db = client.db(dbname);
     return result();
@@ -24,6 +27,7 @@ export const connect = async (result) => {
   }
 };
 
+// Function to retrieve the current state of the database connection
 export const get=()=>{
   return state.db;
 }
