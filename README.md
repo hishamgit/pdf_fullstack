@@ -22,11 +22,11 @@ A web application built using the MERN (MongoDB, Express.js, React.js, Node.js) 
 1. Clone the repository:
 
    ```bash
-   git@github.com:hishamgit/pdf_fullstack.git
+   https://github.com/hishamgit/pdf_fullstack.git
 2. Navigate to the project directory:
    ```bash
-   cd bookStore_MERN_app
+   cd pdf_fullstack
    cd backend
-3. Create a .env file which contains JWT_KEY, and config.js which contains PORT and mongoDbURL
+3. Create a config.js file which contains JWT_KEY
 4. Install dependencies for the server:
    ```bash
